@@ -103,7 +103,7 @@ namespace UABEA.Android
             {
                 fileNameBox.Text = suggestedFileName ?? "";
                 btnConfirm.Content = "Save";
-                titleText.Text = "Save到...";
+                titleText.Text = "Save to...";
             }
             else if (mode == BrowserMode.Directory)
             {
@@ -112,7 +112,7 @@ namespace UABEA.Android
             }
             else
             {
-                btnConfirm.Content = "选择此文件";
+                btnConfirm.Content = "Select This File";
                 titleText.Text = "Select File";
             }
 
