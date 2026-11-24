@@ -412,7 +412,7 @@ namespace UABEA.Android
         {
             int total = _allEntries.Count;
             int modified = _allEntries.Count(x => x.IsModified);
-            listStats.Text = total > 0 ? $"{total} entries · 已改 {modified}" : "";
+            listStats.Text = total > 0 ? $"{total} entries · modified: {modified}" : "";
         }
 
         private void EntryList_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -501,7 +501,7 @@ namespace UABEA.Android
                     {
                         SaveOneFile(group.Key, group.ToList(), outDir);
                         count++;
-                        Dispatcher.UIThread.Post(() => { progressText.Text = $"保存 {count}/{byFile.Count}"; });
+                        Dispatcher.UIThread.Post(() => { progressText.Text = $"Saving {count}/{byFile.Count}"; });
                     }
                     catch (Exception ex)
                     {
@@ -513,7 +513,7 @@ namespace UABEA.Android
 
             HideProgress();
             Log($"Save complete: {savedFiles}/{byFile.Count} files → {outDir}");
-            statusText.Text = $"Saved {savedFiles} files到 {Path.GetFileName(outDir)}";
+            statusText.Text = $"Saved {savedFiles}  files to {Path.GetFileName(outDir)}";
         }
 
         /// <summary>把单个文件的修改写回,输出到 outDir(保持原相对路径结构)</summary>
@@ -687,7 +687,7 @@ namespace UABEA.Android
             {
                 TextEntryTxtIo.ExportToFile(_allEntries, path);
                 Log($"Exported {_allEntries.Count} entries to {path}");
-                statusText.Text = $"Exported {_allEntries.Count} 条 → {Path.GetFileName(path)}";
+                statusText.Text = $"Exported {_allEntries.Count} entries → {Path.GetFileName(path)}";
             }
             catch (Exception ex)
             {
@@ -719,8 +719,8 @@ namespace UABEA.Android
 
             ApplySearchFilter();
             UpdateListStats();
-            Log($"Imported translations: {applied} 条");
-            statusText.Text = $"已导入 {applied} translations";
+            Log($"Imported translations: {applied} entries");
+            statusText.Text = $"Imported {applied} translations";
 
             // 刷新当前选中
             if (_selectedEntry != null)
