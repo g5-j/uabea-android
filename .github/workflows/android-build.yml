@@ -1,0 +1,81 @@
+name: Build UABEA Android APK
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install .NET Android workload
+        run: dotnet workload install android
+
+      - name: Create temporary CI signing key
+        run: |
+          mkdir -p "$HOME/.android"
+          keytool -genkeypair -v \
+            -keystore "$HOME/.android/uabea-ci.keystore" \
+            -storepass android \
+            -keypass android \
+            -alias uabea-ci \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=UABEA CI,O=GitHub Actions,C=US"
+
+      - name: Publish APK
+        run: |
+          dotnet publish \
+            UABEA.Android/UABEA.Android.Android/UABEA.Android.Android.csproj \
+            --configuration Release \
+            --framework net8.0-android \
+            --property:AndroidPackageFormat=apk \
+            --property:AndroidKeyStore=true \
+            --property:AndroidSigningKeyStore="$HOME/.android/uabea-ci.keystore" \
+            --property:AndroidSigningKeyAlias=uabea-ci \
+            --property:AndroidSigningStorePass=android \
+            --property:AndroidSigningKeyPass=android
+
+      - name: Verify APK output
+        run: |
+          mkdir -p artifacts
+          find UABEA.Android/UABEA.Android.Android/bin/Release/net8.0-android -type f -name '*.apk' -print -exec cp {} artifacts/ \;
+          test -n "$(find artifacts -maxdepth 1 -type f -name '*.apk' -print -quit)"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UABEA-Android-APK
+          path: artifacts/*.apk
+          if-no-files-found: error
+          retention-days: 14
