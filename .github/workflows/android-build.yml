@@ -32,10 +32,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up .NET
+      - name: Set up .NET 8 SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.428'
+
+      - name: Verify pinned .NET SDK
+        run: dotnet --info
 
       - name: Install .NET Android workload
         run: dotnet workload install android
@@ -58,7 +61,7 @@ jobs:
           dotnet publish \
             UABEA.Android/UABEA.Android.Android/UABEA.Android.Android.csproj \
             --configuration Release \
-            --framework net8.0-android \
+            --framework net8.0-android34.0 \
             --property:AndroidPackageFormat=apk \
             --property:AndroidKeyStore=true \
             --property:AndroidSigningKeyStore="$HOME/.android/uabea-ci.keystore" \
@@ -69,7 +72,7 @@ jobs:
       - name: Verify APK output
         run: |
           mkdir -p artifacts
-          find UABEA.Android/UABEA.Android.Android/bin/Release/net8.0-android -type f -name '*.apk' -print -exec cp {} artifacts/ \;
+          find UABEA.Android/UABEA.Android.Android/bin/Release/net8.0-android34.0 -type f -name '*.apk' -print -exec cp {} artifacts/ \;
           test -n "$(find artifacts -maxdepth 1 -type f -name '*.apk' -print -quit)"
 
       - name: Upload APK artifact
