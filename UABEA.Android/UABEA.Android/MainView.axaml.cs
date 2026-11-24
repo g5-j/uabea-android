@@ -17,7 +17,7 @@ namespace UABEA.Android
 {
     /// <summary>
     /// UABEA Android 文字翻译工具主视图(竖屏)。
-    /// 流程:选目录 → 扫描所有 Unity 文件 → 提取 TextAsset+MonoBehaviour 字符串
+    /// 流程:选目录 → 扫描所有 Unity files → Extracting TextAsset+MonoBehaviour 字符串
     ///       → 列表展示 → 应用内编辑 或 导出/导入 TXT → 保存到 _edited 子目录。
     /// </summary>
     public partial class MainView : UserControl
@@ -28,7 +28,7 @@ namespace UABEA.Android
         private ObservableCollection<TextEntry> _entries = new();
         private List<TextEntry> _allEntries = new();
 
-        /// <summary>已加载的所有 Unity 文件信息(用于保存时定位)</summary>
+        /// <summary>已加载的所有 Unity files信息(用于保存时定位)</summary>
         private List<LoadedUnityFile> _loadedFiles = new();
 
         /// <summary>当前扫描的根目录</summary>
@@ -80,18 +80,18 @@ namespace UABEA.Android
                 if (File.Exists(cdPath))
                 {
                     _am.LoadClassPackage(cdPath);
-                    Log($"classdata.tpk 已加载: {cdPath}");
-                    statusText.Text = "就绪 - 点击\"打开\"选择文件目录";
+                    Log($"Loaded classdata.tpk: {cdPath}");
+                    statusText.Text = "Ready - Click Open to select a folder";
                 }
                 else
                 {
-                    Log($"警告:classdata.tpk 未找到: {cdPath}");
-                    statusText.Text = "警告:classdata.tpk 缺失,MonoBehaviour 可能无法解析";
+                    Log($"Warning: classdata.tpk not found: {cdPath}");
+                    statusText.Text = "Warning: classdata.tpk is missing; MonoBehaviour assets may not be parsed";
                 }
             }
             catch (Exception ex)
             {
-                Log("初始化异常: " + ex);
+                Log("Initialization error: " + ex);
             }
         }
 
@@ -124,7 +124,7 @@ namespace UABEA.Android
             int modifiedCount = _allEntries.Count(x => x.IsModified);
             if (modifiedCount == 0)
             {
-                statusText.Text = "没有修改需要保存";
+                statusText.Text = "No changes to save";
                 return;
             }
             _pending = PendingAction.SaveAllDir;
@@ -134,7 +134,7 @@ namespace UABEA.Android
         // ==================== 3. 导出/导入 TXT ====================
         private void BtnExportTxt_Click(object? sender, RoutedEventArgs e)
         {
-            if (_allEntries.Count == 0) { statusText.Text = "无文字可导出"; return; }
+            if (_allEntries.Count == 0) { statusText.Text = "No text to export"; return; }
             _pending = PendingAction.ExportTxtFile;
             ShowFileBrowser(FileBrowserView.BrowserMode.Save,
                 extensions: new HashSet<string> { "txt" },
@@ -148,7 +148,7 @@ namespace UABEA.Android
                 extensions: new HashSet<string> { "txt" });
         }
 
-        // ==================== 文件浏览器 ====================
+        // ==================== files浏览器 ====================
         private void ShowFileBrowser(FileBrowserView.BrowserMode mode,
             HashSet<string>? extensions = null, string? suggestedName = null, string? startDir = null)
         {
@@ -185,8 +185,8 @@ namespace UABEA.Android
             }
             catch (Exception ex)
             {
-                Log("操作失败: " + ex);
-                statusText.Text = "操作失败: " + ex.Message;
+                Log("Operation failed: " + ex);
+                statusText.Text = "Operation failed: " + ex.Message;
             }
             finally
             {
@@ -209,8 +209,8 @@ namespace UABEA.Android
             _loadedFiles.Clear();
             UnloadAllFiles();
 
-            ShowProgress("扫描目录...");
-            Log($"开始扫描: {dir}");
+            ShowProgress("Scanning folder...");
+            Log($"Started scanning: {dir}");
 
             // 找所有 Unity 资产文件
             var exts = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "bundle", "assets", "unity3d", "ab", "dat" };
@@ -226,12 +226,12 @@ namespace UABEA.Android
                             result.Add(f);
                     }
                 }
-                catch (Exception ex) { Log("枚举文件异常: " + ex.Message); }
+                catch (Exception ex) { Log("File enumeration error: " + ex.Message); }
                 return result;
             });
 
-            Log($"找到 {files.Count} 个候选文件");
-            topStatus.Text = $"扫描到 {files.Count} 个文件,正在提取文字...";
+            Log($"Found {files.Count} candidate files");
+            topStatus.Text = $"Found {files.Count} files. Extracting text...";
 
             // 逐个打开并提取
             await Task.Run(() =>
@@ -242,7 +242,7 @@ namespace UABEA.Android
                     processed++;
                     Dispatcher.UIThread.Post(() =>
                     {
-                        progressText.Text = $"提取 {processed}/{files.Count}\n{Path.GetFileName(file)}";
+                        progressText.Text = $"Extracting {processed}/{files.Count}\n{Path.GetFileName(file)}";
                     });
                     try
                     {
@@ -250,7 +250,7 @@ namespace UABEA.Android
                     }
                     catch (Exception ex)
                     {
-                        Log($"跳过 {Path.GetFileName(file)}: {ex.Message}");
+                        Log($"Skipped {Path.GetFileName(file)}: {ex.Message}");
                     }
                 }
             });
@@ -259,16 +259,16 @@ namespace UABEA.Android
             UpdateListStats();
             HideProgress();
 
-            Log($"扫描完成,共 {_allEntries.Count} 条文字");
-            statusText.Text = $"扫描完成: {_allEntries.Count} 条文字 (来自 {_loadedFiles.Count} 个文件)";
-            topStatus.Text = $"共 {_allEntries.Count} 条 · {_loadedFiles.Count} 文件";
+            Log($"Scan complete. Total: {_allEntries.Count} text entries");
+            statusText.Text = $"Scan complete: {_allEntries.Count} text entries (from {_loadedFiles.Count} files)";
+            topStatus.Text = $"Total: {_allEntries.Count} entries · {_loadedFiles.Count} files";
 
             btnSaveAll.IsEnabled = _allEntries.Count > 0;
             btnExportTxt.IsEnabled = _allEntries.Count > 0;
             btnImportTxt.IsEnabled = _allEntries.Count > 0;
         }
 
-        /// <summary>从单个 Unity 文件提取所有文字</summary>
+        /// <summary>从单个 Unity files提取所有文字</summary>
         private void ExtractFromFile(string filePath, string rootDir)
         {
             var fileType = FileTypeDetector.DetectFileType(filePath);
@@ -369,7 +369,7 @@ namespace UABEA.Android
                             }
                         }
                     }
-                    catch { /* 单个资产失败跳过 */ }
+                    catch { /* 单个资产失败Skipped */ }
                 }
             }
 
@@ -403,7 +403,7 @@ namespace UABEA.Android
                 _entries.Add(e);
 
             resultCount.Text = _allEntries.Count > 0
-                ? $"显示 {filtered.Count} / {_allEntries.Count}"
+                ? $"Showing {filtered.Count} / {_allEntries.Count}"
                 : "";
             UpdateListStats();
         }
@@ -412,7 +412,7 @@ namespace UABEA.Android
         {
             int total = _allEntries.Count;
             int modified = _allEntries.Count(x => x.IsModified);
-            listStats.Text = total > 0 ? $"{total} 条 · 已改 {modified}" : "";
+            listStats.Text = total > 0 ? $"{total} entries · 已改 {modified}" : "";
         }
 
         private void EntryList_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -435,10 +435,10 @@ namespace UABEA.Android
 
         private void BtnApplyEntry_Click(object? sender, RoutedEventArgs e)
         {
-            if (_selectedEntry == null) { statusText.Text = "请先选中条目"; return; }
+            if (_selectedEntry == null) { statusText.Text = "Select an entry first"; return; }
             _selectedEntry.Translated = translatedBox.Text ?? "";
             UpdateListStats();
-            statusText.Text = "已应用当前条目译文";
+            statusText.Text = "Applied translation for the current entry";
 
             // 触发列表刷新(让译文显示在左侧)
             int idx = _entries.IndexOf(_selectedEntry);
@@ -467,11 +467,11 @@ namespace UABEA.Android
             string orig = originalBox.Text ?? "";
             string trans = translatedBox.Text ?? "";
             if (trans == orig)
-                editStatus.Text = "译文=原文(未修改)";
+                editStatus.Text = "Translation matches original (unchanged)";
             else if (string.IsNullOrEmpty(trans))
-                editStatus.Text = "译文为空";
+                editStatus.Text = "Translation is empty";
             else
-                editStatus.Text = "已修改(待应用)";
+                editStatus.Text = "Modified (not yet applied)";
         }
 
         // ==================== 保存到目录 ====================
@@ -481,15 +481,15 @@ namespace UABEA.Android
             var modifiedEntries = _allEntries.Where(x => x.IsModified).ToList();
             if (modifiedEntries.Count == 0)
             {
-                statusText.Text = "没有修改";
+                statusText.Text = "No changes";
                 return;
             }
 
             // 按文件分组:同一文件里的多处修改一次写回
             var byFile = modifiedEntries.GroupBy(x => x.FilePath).ToList();
-            Log($"保存:{modifiedEntries.Count} 条修改,涉及 {byFile.Count} 个文件");
+            Log($"Saving: {modifiedEntries.Count} changes across {byFile.Count} files");
 
-            ShowProgress("保存中...");
+            ShowProgress("Saving...");
 
             // 重新加载文件,应用修改并写出
             int savedFiles = await Task.Run(() =>
@@ -505,15 +505,15 @@ namespace UABEA.Android
                     }
                     catch (Exception ex)
                     {
-                        Dispatcher.UIThread.Post(() => Log($"保存失败 {group.Key}: {ex.Message}"));
+                        Dispatcher.UIThread.Post(() => Log($"Save failed for {group.Key}: {ex.Message}"));
                     }
                 }
                 return count;
             });
 
             HideProgress();
-            Log($"保存完成: {savedFiles}/{byFile.Count} 个文件 → {outDir}");
-            statusText.Text = $"已保存 {savedFiles} 个文件到 {Path.GetFileName(outDir)}";
+            Log($"Save complete: {savedFiles}/{byFile.Count} files → {outDir}");
+            statusText.Text = $"Saved {savedFiles} files到 {Path.GetFileName(outDir)}";
         }
 
         /// <summary>把单个文件的修改写回,输出到 outDir(保持原相对路径结构)</summary>
@@ -577,7 +577,7 @@ namespace UABEA.Android
             }
         }
 
-        /// <summary>为一个 .assets 文件构建所有 replacer</summary>
+        /// <summary>为一个 .assets files构建所有 replacer</summary>
         private List<AssetsReplacer> BuildReplacersForFile(AssetsManager am, AssetsFileInstance inst,
             List<IGrouping<long, TextEntry>> byAsset)
         {
@@ -686,13 +686,13 @@ namespace UABEA.Android
             try
             {
                 TextEntryTxtIo.ExportToFile(_allEntries, path);
-                Log($"已导出 {_allEntries.Count} 条到 {path}");
-                statusText.Text = $"已导出 {_allEntries.Count} 条 → {Path.GetFileName(path)}";
+                Log($"Exported {_allEntries.Count} entries to {path}");
+                statusText.Text = $"Exported {_allEntries.Count} 条 → {Path.GetFileName(path)}";
             }
             catch (Exception ex)
             {
-                Log("导出失败: " + ex);
-                statusText.Text = "导出失败: " + ex.Message;
+                Log("Export failed: " + ex);
+                statusText.Text = "Export failed: " + ex.Message;
             }
         }
 
@@ -719,8 +719,8 @@ namespace UABEA.Android
 
             ApplySearchFilter();
             UpdateListStats();
-            Log($"已导入翻译: {applied} 条");
-            statusText.Text = $"已导入 {applied} 条翻译";
+            Log($"Imported translations: {applied} 条");
+            statusText.Text = $"已导入 {applied} translations";
 
             // 刷新当前选中
             if (_selectedEntry != null)
@@ -731,7 +731,7 @@ namespace UABEA.Android
         }
     }
 
-    /// <summary>已加载的 Unity 文件信息</summary>
+    /// <summary>已加载的 Unity files信息</summary>
     internal class LoadedUnityFile
     {
         public string FilePath { get; set; } = "";
