@@ -91,7 +91,7 @@ public class MainActivity : AvaloniaMainActivity<global::UABEA.Android.App>
                 if (global::Android.OS.Environment.IsExternalStorageManager)
                 {
                     global::UABEA.Android.CrashLogger.SetPublicLogDir("/storage/emulated/0/logs");
-                    global::UABEA.Android.CrashLogger.Log("TryEnablePublicLog", "MANAGE_EXTERNAL_STORAGE 已授予，公共日志写入 /storage/emulated/0/logs");
+                    global::UABEA.Android.CrashLogger.Log("TryEnablePublicLog", "MANAGE_EXTERNAL_STORAGE granted. Public logs will be written to /storage/emulated/0/logs");
                 }
                 else
                 {
@@ -101,7 +101,7 @@ public class MainActivity : AvaloniaMainActivity<global::UABEA.Android.App>
                     {
                         var logDir = Path.Combine(extDir, "logs");
                         global::UABEA.Android.CrashLogger.SetPublicLogDir(logDir);
-                        global::UABEA.Android.CrashLogger.Log("TryEnablePublicLog", $"MANAGE_EXTERNAL_STORAGE 未授予，日志回退到 {logDir}");
+                        global::UABEA.Android.CrashLogger.Log("TryEnablePublicLog", $"MANAGE_EXTERNAL_STORAGE not granted. Logs will use {logDir}");
                     }
                 }
             }
@@ -109,7 +109,7 @@ public class MainActivity : AvaloniaMainActivity<global::UABEA.Android.App>
             {
                 // Android 10 及以下，传统权限即可
                 global::UABEA.Android.CrashLogger.SetPublicLogDir("/storage/emulated/0/logs");
-                global::UABEA.Android.CrashLogger.Log("TryEnablePublicLog", "Android<=10，公共日志写入 /storage/emulated/0/logs");
+                global::UABEA.Android.CrashLogger.Log("TryEnablePublicLog", "Android <= 10. Public logs will be written to /storage/emulated/0/logs");
             }
         }
         catch (Exception ex)
@@ -128,7 +128,7 @@ public class MainActivity : AvaloniaMainActivity<global::UABEA.Android.App>
                 // Android 11+：需要 MANAGE_EXTERNAL_STORAGE 才能访问公共目录
                 if (!global::Android.OS.Environment.IsExternalStorageManager)
                 {
-                    global::UABEA.Android.CrashLogger.Log("RequestStorage", "请求 MANAGE_EXTERNAL_STORAGE（跳转设置）");
+                    global::UABEA.Android.CrashLogger.Log("RequestStorage", "Requesting MANAGE_EXTERNAL_STORAGE (opening Settings)");
                     try
                     {
                         var intent = new Intent(Settings.ActionManageAppAllFilesAccessPermission);
@@ -144,7 +144,7 @@ public class MainActivity : AvaloniaMainActivity<global::UABEA.Android.App>
                 }
                 else
                 {
-                    global::UABEA.Android.CrashLogger.Log("RequestStorage", "MANAGE_EXTERNAL_STORAGE 已拥有");
+                    global::UABEA.Android.CrashLogger.Log("RequestStorage", "MANAGE_EXTERNAL_STORAGE permission already granted");
                 }
             }
             else
@@ -175,12 +175,12 @@ public class MainActivity : AvaloniaMainActivity<global::UABEA.Android.App>
             }
             if (need.Count > 0)
             {
-                global::UABEA.Android.CrashLogger.Log("RequestLegacy", "申请权限: " + string.Join(", ", need));
+                global::UABEA.Android.CrashLogger.Log("RequestLegacy", "Requesting permissions: " + string.Join(", ", need));
                 RequestPermissions(need.ToArray(), RequestStoragePermId);
             }
             else
             {
-                global::UABEA.Android.CrashLogger.Log("RequestLegacy", "传统存储权限已拥有");
+                global::UABEA.Android.CrashLogger.Log("RequestLegacy", "Legacy storage permissions already granted");
             }
         }
         catch (Exception ex)
@@ -199,12 +199,12 @@ public class MainActivity : AvaloniaMainActivity<global::UABEA.Android.App>
                 if (Build.VERSION.SdkInt >= BuildVersionCodes.R && global::Android.OS.Environment.IsExternalStorageManager)
                 {
                     global::UABEA.Android.CrashLogger.SetPublicLogDir("/storage/emulated/0/logs");
-                    global::UABEA.Android.CrashLogger.Log("OnActivityResult", "用户已授予 MANAGE_EXTERNAL_STORAGE，公共日志已切换到 /storage/emulated/0/logs");
-                    global::UABEA.Android.CrashLogger.ToastShower?.Invoke("已获得所有文件访问权限，日志将写入 /storage/emulated/0/logs/");
+                    global::UABEA.Android.CrashLogger.Log("OnActivityResult", "User granted MANAGE_EXTERNAL_STORAGE. Public logs switched to /storage/emulated/0/logs");
+                    global::UABEA.Android.CrashLogger.ToastShower?.Invoke("All-files access granted. Logs will be written to /storage/emulated/0/logs/");
                 }
                 else
                 {
-                    global::UABEA.Android.CrashLogger.Log("OnActivityResult", "用户未授予 MANAGE_EXTERNAL_STORAGE，继续使用应用私有目录");
+                    global::UABEA.Android.CrashLogger.Log("OnActivityResult", "User did not grant MANAGE_EXTERNAL_STORAGE. Continuing to use the app's private directory");
                 }
             }
         }
@@ -226,7 +226,7 @@ public class MainActivity : AvaloniaMainActivity<global::UABEA.Android.App>
                 {
                     if (r != Permission.Granted) allGranted = false;
                 }
-                global::UABEA.Android.CrashLogger.Log("OnRequestPermResult", $"传统权限结果: allGranted={allGranted}");
+                global::UABEA.Android.CrashLogger.Log("OnRequestPermResult", $"Legacy permission result: allGranted={allGranted}");
             }
         }
         catch (Exception ex)
