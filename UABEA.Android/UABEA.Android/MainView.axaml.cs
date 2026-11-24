@@ -513,7 +513,7 @@ namespace UABEA.Android
 
             HideProgress();
             Log($"Save complete: {savedFiles}/{byFile.Count} files → {outDir}");
-            statusText.Text = $"Saved {savedFiles}  files to {Path.GetFileName(outDir)}";
+            statusText.Text = $"Saved {savedFiles} files to {Path.GetFileName(outDir)}";
         }
 
         /// <summary>把单个文件的修改写回,输出到 outDir(保持原相对路径结构)</summary>
