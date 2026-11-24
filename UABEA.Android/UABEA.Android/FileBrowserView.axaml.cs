@@ -13,8 +13,8 @@ namespace UABEA.Android
     /// 内置文件选择系统。
     /// 直接通过 System.IO 遍历存储目录，不调用系统 StorageProvider，
     /// 避免应用切到后台被回收（Android 上系统文件选择器是独立 Activity，
-    /// 切换过程中 UABEA 进程容易被系统杀掉）。
-    /// 支持三种模式：Open（选文件）、Save（选目录+输入文件名）、Directory（选目录）。
+    /// 切换过程中 UABEA 进程容易被系统杀掉)。
+    /// 支持三种模式：Open（选文件)、Save（选目录+输入文件名)、Directory（选目录)。
     /// </summary>
     public partial class FileBrowserView : UserControl
     {
@@ -23,9 +23,9 @@ namespace UABEA.Android
         {
             /// <summary>打开文件：选择一个已存在的文件</summary>
             Open,
-            /// <summary>保存文件：选择目录并输入文件名</summary>
+            /// <summary>Save文件：Select Folder并输入文件名</summary>
             Save,
-            /// <summary>选择目录</summary>
+            /// <summary>Select Folder</summary>
             Directory
         }
 
@@ -44,19 +44,19 @@ namespace UABEA.Android
         private string _currentDir;
         private BrowserMode _mode = BrowserMode.Open;
 
-        /// <summary>选中的文件路径（确认后有效）</summary>
+        /// <summary>选中的文件路径（确认后有效)</summary>
         public string? SelectedFilePath { get; private set; }
 
-        /// <summary>选中的目录路径（Directory 模式确认后有效）</summary>
+        /// <summary>选中的目录路径（Directory 模式确认后有效)</summary>
         public string? SelectedDirectoryPath { get; private set; }
 
         /// <summary>是否已确认</summary>
         public bool Confirmed { get; private set; }
 
-        /// <summary>文件过滤扩展名（小写无点，如 "bundle"。null 表示不过滤）</summary>
+        /// <summary>文件过滤扩展名（小写无点，如 "bundle"。null 表示不过滤)</summary>
         public HashSet<string>? FilterExtensions { get; set; }
 
-        /// <summary>确认选择事件（参数为最终路径：Open=文件路径，Save=目录/文件名完整路径，Directory=目录路径）</summary>
+        /// <summary>确认选择事件（参数为最终路径：Open=文件路径，Save=目录/文件名完整路径，Directory=目录路径)</summary>
         public event EventHandler<string?>? FileSelected;
 
         /// <summary>取消事件</summary>
@@ -82,10 +82,10 @@ namespace UABEA.Android
         }
 
         /// <summary>初始化文件选择器</summary>
-        /// <param name="startDir">起始目录（null 用默认）</param>
-        /// <param name="extensions">文件扩展名过滤（仅 Open 模式生效）</param>
+        /// <param name="startDir">起始目录（null 用默认)</param>
+        /// <param name="extensions">文件扩展名过滤（仅 Open 模式生效)</param>
         /// <param name="mode">选择模式</param>
-        /// <param name="suggestedFileName">建议文件名（Save 模式下预填到 fileNameBox）</param>
+        /// <param name="suggestedFileName">建议文件名（Save 模式下预填到 fileNameBox)</param>
         public void Initialize(string? startDir = null, HashSet<string>? extensions = null,
             BrowserMode mode = BrowserMode.Open, string? suggestedFileName = null)
         {
@@ -102,18 +102,18 @@ namespace UABEA.Android
             if (mode == BrowserMode.Save)
             {
                 fileNameBox.Text = suggestedFileName ?? "";
-                btnConfirm.Content = "保存";
-                titleText.Text = "保存到...";
+                btnConfirm.Content = "Save";
+                titleText.Text = "Save到...";
             }
             else if (mode == BrowserMode.Directory)
             {
-                btnConfirm.Content = "选择此目录";
-                titleText.Text = "选择目录";
+                btnConfirm.Content = "Select This Folder";
+                titleText.Text = "Select Folder";
             }
             else
             {
                 btnConfirm.Content = "选择此文件";
-                titleText.Text = "选择文件";
+                titleText.Text = "Select File";
             }
 
             Refresh();
@@ -122,7 +122,7 @@ namespace UABEA.Android
         private static string GetDefaultStartDir()
         {
             // Android 存储路径优先级：
-            // 1. /storage/emulated/0（内部存储根目录）
+            // 1. /storage/emulated/0（内部存储根目录)
             // 2. /sdcard
             // 3. AppPaths.CacheDir 上两级
             // 4. 用户目录
@@ -165,14 +165,14 @@ namespace UABEA.Android
                     dirs.Add(new FileEntry { Name = name, FullPath = d, IsDirectory = true });
                 }
 
-                // Save 和 Directory 模式下也显示文件（方便用户定位），但 Open 模式才过滤
+                // Save 和 Directory 模式下也显示文件（方便用户定位)，但 Open 模式才过滤
                 foreach (var f in Directory.GetFiles(_currentDir))
                 {
                     var name = Path.GetFileName(f);
                     if (string.IsNullOrEmpty(name)) continue;
                     if (name.StartsWith(".")) continue;
 
-                    // 应用过滤（仅 Open 模式）
+                    // 应用过滤（仅 Open 模式)
                     if (_mode == BrowserMode.Open && FilterExtensions != null && FilterExtensions.Count > 0)
                     {
                         var ext = Path.GetExtension(name).TrimStart('.').ToLowerInvariant();
@@ -193,11 +193,11 @@ namespace UABEA.Android
             catch (UnauthorizedAccessException)
             {
                 // 无权限访问该目录，尝试回退
-                _entries.Add(new FileEntry { Name = "（无权限访问此目录）", FullPath = "", IsDirectory = false });
+                _entries.Add(new FileEntry { Name = "(Permission denied for this folder)", FullPath = "", IsDirectory = false });
             }
             catch (Exception ex)
             {
-                _entries.Add(new FileEntry { Name = "（读取失败: " + ex.Message + "）", FullPath = "", IsDirectory = false });
+                _entries.Add(new FileEntry { Name = "(Read failed: " + ex.Message + ")", FullPath = "", IsDirectory = false });
             }
         }
 
@@ -237,7 +237,7 @@ namespace UABEA.Android
                 else if (!string.IsNullOrEmpty(entry.FullPath))
                 {
                     _selectedFile = entry;
-                    // Save 模式：点击文件时把文件名填入 fileNameBox（方便覆盖）
+                    // Save 模式：点击文件时把文件名填入 fileNameBox（方便覆盖)
                     if (_mode == BrowserMode.Save)
                         fileNameBox.Text = entry.Name;
                 }
